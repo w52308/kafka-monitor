@@ -147,7 +147,7 @@
                     layer.open({
                         type: 2,
                         title: '<i class="layui-icon layui-icon-login-wechat" style="color: #1E9FFF;"></i>&nbsp;消息详情',
-                        content: 'tomsgdetail?topicName=' + data.topicName + '&partitionId=' + data.partitionId + '&offset=' + data.offset + '&key=' + data.key + '&createTime=' + data.createTime,
+                        content: 'tomsgdetail?topicName=' + data.topicName + '&partitionId=' + data.partitionId + '&offset=' + data.offset + '&key=' + data.key + '&createTime=' + data.createTimeRange,
                         shadeClose: true,
                         shade: 0.8,
                         area: ['880px', '820px']

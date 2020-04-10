@@ -83,6 +83,10 @@ public class TopicRecordService extends ServiceImpl<TopicRecordMapper, TopicReco
             topicRecordValue.setOffset(topicRecord.getOffset());
             topicRecordValue.setValue(value);
             topicRecordValueList.add(topicRecordValue);
+            if (value.length() > 125) {
+                value = value.substring(0, 125).concat("...");
+                topicRecord.setValue(value);
+            }
         }
 
         batchSave(tableName, topicRecordList, recordTableName, topicRecordValueList);

@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 
 import static com.pegasus.kafka.controller.RecordController.PREFIX;
 
+import javax.xml.crypto.Data;
+
 /**
  * The controller for providing the trace ability for topics' records.
  * <p>
@@ -65,14 +67,13 @@ public class RecordController {
                               @RequestParam(value = "topicName", required = true) String topicName,
                               @RequestParam(value = "partitionId", required = true) Integer partitionId,
                               @RequestParam(value = "offset", required = true) Long offset,
-                              @RequestParam(value = "key", required = true) String key,
-                              @RequestParam(value = "createTime", required = true) Date createTime) {
+                              @RequestParam(value = "key", required = true) String key) {
         String recordValue = topicRecordService.findRecordValue(topicName, partitionId, offset);
         model.addAttribute("topicName", topicName);
         model.addAttribute("partitionId", partitionId);
         model.addAttribute("offset", offset);
         model.addAttribute("key", key);
-        model.addAttribute("createTime", Common.format(createTime));
+        model.addAttribute("createTime", Common.format(new Date()));
         model.addAttribute("value", recordValue);
         return String.format("%s/msgdetail", PREFIX);
     }
