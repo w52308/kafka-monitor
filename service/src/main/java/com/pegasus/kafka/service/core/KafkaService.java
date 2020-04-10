@@ -1,16 +1,30 @@
 package com.pegasus.kafka.service.core;
 
+import com.huawei.cbb.protobuf.VcnMetaDataProtobuf;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.googlecode.protobuf.format.JsonFormat;
+import com.googlecode.protobuf.format.bits.Base64Serializer;
 import com.pegasus.kafka.common.constant.Constants;
 import com.pegasus.kafka.common.constant.JMX;
 import com.pegasus.kafka.common.exception.BusinessException;
 import com.pegasus.kafka.common.response.ResultCode;
 import com.pegasus.kafka.common.utils.Common;
+import com.pegasus.kafka.common.utils.ConfUtils;
 import com.pegasus.kafka.entity.dto.SysKpi;
 import com.pegasus.kafka.entity.po.Out;
 import com.pegasus.kafka.entity.vo.*;
+import com.pegasus.kafka.service.property.PropertyService;
+
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -20,12 +34,15 @@ import org.apache.kafka.common.ConsumerGroupState;
 import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.TopicPartitionInfo;
+import org.apache.kafka.common.config.SaslConfigs;
+import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.zookeeper.data.Stat;
-import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -41,21 +58,22 @@ import java.util.stream.Collectors;
  * *****************************************************************
  */
 @Service
+@Slf4j
 public class KafkaService {
-    private final KafkaZkService kafkaZkService;
-    private final KafkaJmxService kafkaJmxService;
-    private final MBeanService mBeanService;
-    private final MBeanService mbeanService;
+    
+    @Autowired
+    private KafkaZkService kafkaZkService;
+    
+    @Autowired
+    private MBeanService mBeanService;
+    
+    @Autowired
+    private MBeanService mbeanService;
+    
+    @Autowired
+    private PropertyService propertyService;
 
-    public KafkaService(KafkaZkService kafkaZkService,
-                        KafkaJmxService kafkaJmxService,
-                        MBeanService mBeanService,
-                        MBeanService mbeanService) {
-        this.kafkaZkService = kafkaZkService;
-        this.kafkaJmxService = kafkaJmxService;
-        this.mBeanService = mBeanService;
-        this.mbeanService = mbeanService;
-    }
+   
 
     public List<String> listPartitionIds(String topicName) throws Exception {
         return kafkaZkService.getChildren(String.format(Constants.ZK_BROKERS_TOPICS_PARTITION_PATH, topicName));
@@ -378,8 +396,8 @@ public class KafkaService {
             Optional<KafkaBrokerVo> first = brokerVoList.stream().filter(p -> p.getHost().equals(leader.getHost())).findFirst();
             if (first.isPresent()) {
                 KafkaBrokerVo brokerVo = first.get();
-                String size = kafkaJmxService.getData(brokerVo, String.format("kafka.log:type=Log,name=Size,topic=%s,partition=%s", topicName, topicDetail.getPartitionId()), "Value");
-                totalSize += Long.parseLong(size);
+                //String size = kafkaJmxService.getData(brokerVo, String.format("kafka.log:type=Log,name=Size,topic=%s,partition=%s", topicName, topicDetail.getPartitionId()), "Value");
+                totalSize += 0;
             }
         }
         return Common.convertSize(totalSize);
@@ -598,12 +616,12 @@ public class KafkaService {
                         break;
                     case KAFKA_SYSTEM_CPU_LOAD:
                     case KAFKA_PROCESS_CPU_LOAD:
-                        double systemCpuLoad = Double.parseDouble(kafkaJmxService.getData(broker, JMX.OPERATING_SYSTEM, kpi.getName()));
-                        sysKpi.setValue(Common.numberic(sysKpi.getValue() == null ? 0D : sysKpi.getValue()) + systemCpuLoad);
+                        //double systemCpuLoad = Double.parseDouble(kafkaJmxService.getData(broker, JMX.OPERATING_SYSTEM, kpi.getName()));
+                        sysKpi.setValue(Common.numberic(sysKpi.getValue() == null ? 0D : sysKpi.getValue()));
                         break;
                     case KAFKA_THREAD_COUNT:
-                        int threadCount = Integer.parseInt(kafkaJmxService.getData(broker, JMX.THREADING, kpi.getName()));
-                        sysKpi.setValue(Common.numberic(sysKpi.getValue() == null ? 0D : sysKpi.getValue()) + threadCount);
+                        //int threadCount = Integer.parseInt(kafkaJmxService.getData(broker, JMX.THREADING, kpi.getName()));
+                        sysKpi.setValue(Common.numberic(sysKpi.getValue() == null ? 0D : sysKpi.getValue()));
                         break;
                     default:
                         break;
@@ -650,10 +668,22 @@ public class KafkaService {
 
     private KafkaBrokerVo getBrokerInfo(String brokerName) throws Exception {
         String brokerInfoJson = kafkaZkService.getData(String.format("%s/%s", Constants.ZK_BROKER_IDS_PATH, brokerName));
-        JSONObject jsonObject = new JSONObject(brokerInfoJson);
+        JSONObject jsonObject = JSON.parseObject(brokerInfoJson);
         KafkaBrokerVo brokerVo = new KafkaBrokerVo();
-        brokerVo.setHost(jsonObject.get("host").toString());
-        brokerVo.setPort(jsonObject.get("port").toString());
+        if (propertyService.isSaslEnable()) {
+            String endpoints = jsonObject.getString("endpoints");
+            String tmp = endpoints.split("//")[1];
+            String[] ipAndPort = tmp.substring(0, tmp.length() - 2).split(":");
+            brokerVo.setHost(ipAndPort[0]);
+            brokerVo.setPort(ipAndPort[1]);
+        } else {
+            String host = jsonObject.getString("host");
+            int port = jsonObject.getInteger("port");
+            brokerVo.setHost(host);
+            brokerVo.setPort(port + "");
+        }
+       /* brokerVo.setHost(jsonObject.get("host").toString());
+        brokerVo.setPort(jsonObject.get("port").toString());*/
         brokerVo.setEndpoints(jsonObject.get("endpoints").toString());
         brokerVo.setJmxPort(jsonObject.get("jmx_port").toString());
         brokerVo.setCreateTime(Common.format(new Date(jsonObject.getLong("timestamp"))));
@@ -667,7 +697,7 @@ public class KafkaService {
     private String getKafkaVersion(KafkaBrokerVo brokerInfo) {
         String result = " - ";
         try {
-            result = kafkaJmxService.getData(brokerInfo, String.format("kafka.server:type=app-info,id=%s", brokerInfo.getName()), "Version");
+            result = "2.4.1";
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -702,6 +732,11 @@ public class KafkaService {
         try {
             Properties properties = new Properties();
             properties.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, getBootstrapServers());
+            if (propertyService.isSaslEnable()) {
+                ConfUtils.setJaasFile(propertyService.getKafkaUser(), propertyService.getKafkaPassword());
+                properties.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT");
+                properties.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
+            }
             kafkaAdminClient = (KafkaAdminClient) AdminClient.create(properties);
             kafkaAdminClientAction.action(kafkaAdminClient);
         } finally {
@@ -712,7 +747,7 @@ public class KafkaService {
     }
 
     private void kafkaProducerDo(KafkaProducerAction kafkaProducerAction) throws Exception {
-        KafkaProducer<String, String> kafkaProducer = null;
+        KafkaProducer<String, byte[]> kafkaProducer = null;
         try {
             Properties props = new Properties();
             props.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, getBootstrapServers());
@@ -720,8 +755,13 @@ public class KafkaService {
             props.put(ProducerConfig.RETRIES_CONFIG, "3");
             props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, Constants.KAFKA_COMPRESS_TYPE);
             props.put(ProducerConfig.CLIENT_ID_CONFIG, String.format("%s_SEND_MSG", Constants.KAFKA_MONITOR_PEGASUS_SYSTEM_PREFIX));
-            props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
-            props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+            props.put("key.serializer", StringDeserializer.class.getCanonicalName());
+            props.put("value.serializer", ByteArrayDeserializer.class.getCanonicalName());
+            if (propertyService.isSaslEnable()) {
+                ConfUtils.setJaasFile(propertyService.getKafkaUser(), propertyService.getKafkaPassword());
+                props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT");
+                props.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
+            }
             kafkaProducer = new KafkaProducer<>(props);
             kafkaProducerAction.action(kafkaProducer);
         } finally {
@@ -730,20 +770,11 @@ public class KafkaService {
             }
         }
     }
-
+    
     private void kafkaConsumerDo(KafkaConsumerAction kafkaConsumerAction) throws Exception {
         KafkaConsumer kafkaConsumer = null;
         try {
-            Properties props = new Properties();
-            props.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, getBootstrapServers());
-            props.put(ConsumerConfig.GROUP_ID_CONFIG, Constants.KAFKA_MONITOR_SYSTEM_GROUP_NAME_FOR_MONITOR);
-            props.put(ConsumerConfig.CLIENT_ID_CONFIG, String.format("%s_SEND_MSG", Constants.KAFKA_MONITOR_PEGASUS_SYSTEM_PREFIX));
-            props.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
-            props.setProperty(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
-            props.setProperty(ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed");
-            props.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-            props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getCanonicalName());
-            props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getCanonicalName());
+            Properties props = getProperties();
             kafkaConsumer = new KafkaConsumer<>(props);
             kafkaConsumerAction.action(kafkaConsumer);
         } finally {
@@ -751,6 +782,25 @@ public class KafkaService {
                 kafkaConsumer.close();
             }
         }
+    }
+    
+    public Properties getProperties() throws Exception {
+        Properties props = new Properties();
+        props.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, getBootstrapServers());
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, Constants.KAFKA_MONITOR_SYSTEM_GROUP_NAME_FOR_MONITOR);
+        props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, Constants.KAFKA_COMPRESS_TYPE);
+        props.setProperty("enable.auto.commit", "true");
+        props.setProperty("auto.commit.interval.ms", "1000");
+        props.setProperty("isolation.level", "read_committed");
+        props.setProperty("auto.offset.reset", propertyService.getOffsetReset());
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getCanonicalName());
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getCanonicalName());
+        if (propertyService.isSaslEnable()) {
+            ConfUtils.setJaasFile(propertyService.getKafkaUser(), propertyService.getKafkaPassword());
+            props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT");
+            props.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
+        }
+        return props;
     }
 
 
@@ -764,6 +814,34 @@ public class KafkaService {
 
     private interface KafkaConsumerAction {
         void action(KafkaConsumer kafkaConsumer) throws Exception;
+    }
+    
+    public String getValue(ConsumerRecord<String, byte[]> record) {
+        
+        if (record.topic().equals("AlarmMSG") || record.topic().equals("SubscribeData")) {
+            return new String(record.value(), StandardCharsets.UTF_8);
+        } else if (record.topic().equals("FaceLabelMSG") || record.topic().contains("ExtraDataTopic") || record.topic()
+            .contains("UnFrAlarmMSG")) {
+            JsonFormat jsonFormat = new JsonFormat(new Base64Serializer());
+            
+            VcnMetaDataProtobuf.FaceTag2Kfk faceTag2Kfk = null;
+            try {
+                faceTag2Kfk = VcnMetaDataProtobuf.FaceTag2Kfk.parseFrom(record.value());
+            } catch (InvalidProtocolBufferException e) {
+                log.error("prase protobuf error: {}", ExceptionUtils.getStackTrace(e));
+            }
+            return jsonFormat.printToString(faceTag2Kfk);
+        } else {
+            VcnMetaDataProtobuf.VaData2Kfk vaData2Kfk = null;
+            JsonFormat jsonFormat = new JsonFormat(new Base64Serializer());
+            try {
+                vaData2Kfk = VcnMetaDataProtobuf.VaData2Kfk.parseFrom(record.value());
+            } catch (InvalidProtocolBufferException e) {
+                log.error("prase protobuf error: {}", ExceptionUtils.getStackTrace(e));
+            }
+            return jsonFormat.printToString(vaData2Kfk);
+        }
+        
     }
 
 }

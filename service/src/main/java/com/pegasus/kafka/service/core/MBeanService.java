@@ -18,12 +18,7 @@ import java.util.List;
  */
 @Service
 public class MBeanService {
-
-    private final KafkaJmxService kafkaJmxService;
-
-    public MBeanService(KafkaJmxService kafkaJmxService) {
-        this.kafkaJmxService = kafkaJmxService;
-    }
+    
 
     public MBeanVo bytesInPerSec(KafkaBrokerVo brokerInfo) {
         return getMBeanInfo(brokerInfo, JMX.BYTES_IN_PER_SEC);
@@ -114,11 +109,11 @@ public class MBeanService {
     }
 
     public Long getOsTotalMemory(KafkaBrokerVo brokerInfo) throws Exception {
-        return Long.parseLong(kafkaJmxService.getData(brokerInfo, JMX.OPERATING_SYSTEM, JMX.TOTAL_PHYSICAL_MEMORY_SIZE));
+        return 0L;
     }
 
     public Long getOsFreeMemory(KafkaBrokerVo brokerInfo) throws Exception {
-        return Long.parseLong(kafkaJmxService.getData(brokerInfo, JMX.OPERATING_SYSTEM, JMX.FREE_PHYSICAL_MEMORY_SIZE));
+        return 0L;
     }
 
     private MBeanVo getMBeanInfo(KafkaBrokerVo brokerInfo, String name) {
@@ -138,8 +133,8 @@ public class MBeanService {
 
             nameList.add(name);
             attributeList.add("MeanRate");
-
-            String[] data = kafkaJmxService.getData(brokerInfo, nameList.toArray(new String[]{}), attributeList.toArray(new String[]{}));
+    
+            String[] data = new String[]{"0","0","0"};
 
             mbeanVo.setOneMinute(data[0]);
             mbeanVo.setFiveMinute(data[1]);

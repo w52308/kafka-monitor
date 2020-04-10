@@ -69,18 +69,11 @@ public class RecordService implements SmartLifecycle, DisposableBean {
         threadService.submit(() -> {
             Thread.currentThread().setName(String.format("thread-kafka-record-%s", this.topic.getName()));
 
-            KafkaConsumer<String, String> kafkaConsumer = null;
+            KafkaConsumer<String, byte[]> kafkaConsumer = null;
             try {
-                Properties properties = new Properties();
-                properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, kafkaService.getBootstrapServers());
+                Properties properties = kafkaService.getProperties();
+    
                 properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, this.consumerGroupdId);
-                properties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
-                properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "2048");
-                properties.setProperty(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, String.valueOf(1000));
-                properties.setProperty(ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed");
-                properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-                properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getCanonicalName());
-                properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getCanonicalName());
 
                 Map<String, List<MaxOffset>> maxOffsetMap = topicRecordService.listMaxOffset(this.topic.getTopicNameList());
                 kafkaConsumer = new KafkaConsumer<>(properties);
@@ -124,17 +117,17 @@ public class RecordService implements SmartLifecycle, DisposableBean {
                 }
 
                 while (isRunning()) {
-                    ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofMillis(1000));
+                    ConsumerRecords<String, byte[]> records = kafkaConsumer.poll(Duration.ofMillis(1000));
                     if (records.isEmpty()) {
                         continue;
                     }
-                    for (ConsumerRecord<String, String> record : records) {
+                    for (ConsumerRecord<String, byte[]> record : records) {
                         TopicRecord topicRecord = new TopicRecord();
                         topicRecord.setTopicName(StringUtils.isEmpty(record.topic()) ? "" : record.topic());
                         topicRecord.setPartitionId(record.partition());
                         topicRecord.setOffset(record.offset());
                         topicRecord.setKey(StringUtils.isEmpty(record.key()) ? "" : record.key());
-                        topicRecord.setValue(StringUtils.isEmpty(record.value()) ? "" : record.value());
+                        topicRecord.setValue(kafkaService.getValue(record));
                         topicRecord.setTimestamp(new Date(record.timestamp()));
                         if (!this.blockingQueue.offer(topicRecord)) {
                             logger.error(String.format("buffer full for topic [%s], [%s], content is [%s]", topicRecord.getTopicName(), discardCount.incrementAndGet(), topicRecord));

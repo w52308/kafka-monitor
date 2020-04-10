@@ -1,5 +1,8 @@
 package com.pegasus.kafka.controller;
 
+import static com.pegasus.kafka.controller.KafkaPerformanceController.PREFIX;
+
+import com.alibaba.fastjson.JSONObject;
 import com.pegasus.kafka.common.ehcache.EhcacheService;
 import com.pegasus.kafka.common.response.Result;
 import com.pegasus.kafka.common.utils.Common;
@@ -7,19 +10,22 @@ import com.pegasus.kafka.entity.dto.SysKpi;
 import com.pegasus.kafka.entity.echarts.LineInfo;
 import com.pegasus.kafka.service.dto.SysKpiService;
 import com.pegasus.kafka.service.property.PropertyService;
+
 import lombok.Data;
-import org.json.JSONObject;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.pegasus.kafka.controller.KafkaPerformanceController.PREFIX;
 
 /**
  * The controller for showing the performance of kafka's information.

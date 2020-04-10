@@ -38,4 +38,16 @@ public class PropertyService {
 
     @Value("${topic.blacklist}")
     private String topicBlackList;
+    
+    @Value("${kafka.sasl.enable}")
+    private boolean saslEnable;
+    
+    @Value("${kafka.sasl.kafkaUser}")
+    private String kafkaUser;
+    
+    @Value("${kafka.sasl.kafkaPassword}")
+    private String kafkaPassword;
+    
+    @Value("${kafka.sasl.offset.reset}")
+    private String offsetReset;
 }

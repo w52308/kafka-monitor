@@ -1,5 +1,6 @@
 package com.pegasus.kafka.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.pegasus.kafka.common.ehcache.EhcacheService;
 import com.pegasus.kafka.common.response.Result;
 import com.pegasus.kafka.common.utils.Common;
@@ -8,7 +9,6 @@ import com.pegasus.kafka.entity.echarts.LineInfo;
 import com.pegasus.kafka.service.dto.SysKpiService;
 import com.pegasus.kafka.service.property.PropertyService;
 import lombok.Data;
-import org.json.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;

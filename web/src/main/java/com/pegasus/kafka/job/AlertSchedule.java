@@ -2,18 +2,16 @@ package com.pegasus.kafka.job;
 
 import com.pegasus.kafka.common.utils.ZooKeeperKpiUtils;
 import com.pegasus.kafka.entity.dto.SysAlertCluster;
-import com.pegasus.kafka.entity.po.DingDingMessage;
 import com.pegasus.kafka.entity.vo.KafkaBrokerVo;
 import com.pegasus.kafka.service.alert.AlertService;
-import com.pegasus.kafka.service.alert.DingDingService;
 import com.pegasus.kafka.service.alert.MailService;
 import com.pegasus.kafka.service.dto.SysAlertClusterService;
 import com.pegasus.kafka.service.kafka.KafkaBrokerService;
+
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,18 +27,15 @@ import java.util.stream.Collectors;
 public class AlertSchedule {
     private final SysAlertClusterService sysAlertClusterService;
     private final KafkaBrokerService kafkaBrokerService;
-    private final DingDingService dingDingService;
     private final MailService mailService;
     private final AlertService alertService;
 
     public AlertSchedule(SysAlertClusterService sysAlertClusterService,
                          KafkaBrokerService kafkaBrokerService,
-                         DingDingService dingDingService,
                          MailService mailService,
                          AlertService alertService) {
         this.sysAlertClusterService = sysAlertClusterService;
         this.kafkaBrokerService = kafkaBrokerService;
-        this.dingDingService = dingDingService;
         this.mailService = mailService;
         this.alertService = alertService;
     }
@@ -56,16 +51,6 @@ public class AlertSchedule {
             if (!StringUtils.isEmpty(alert.getEmail())) {
                 try {
                     mailService.send(alert.getEmail(), alert.getEmailTitle(), alert.getEmailContent());
-                } catch (Exception ignored) {
-                }
-            }
-            if (!StringUtils.isEmpty(alert.getDingContent())) {
-                try {
-                    DingDingMessage message = new DingDingMessage();
-                    message.setMsgtype("text");
-                    message.setText(new DingDingMessage.Text(alert.getDingContent()));
-                    message.setAt(new DingDingMessage.At(Collections.singletonList(""), true));
-                    dingDingService.send(message);
                 } catch (Exception ignored) {
                 }
             }

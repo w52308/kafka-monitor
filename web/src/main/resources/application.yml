@@ -1,15 +1,22 @@
 zookeeper:
-  connect: ${zk.connect:192.168.6.166:2181,192.168.6.167:2181,192.168.0.197:2181}
+  connect: 3.106.11.103:21816
+kafka:
+  sasl:
+    enable: true
+    kafkaUser: admin
+    kafkaPassword: 5Eqd/QwqPrurz1NEK7ne6w==:-TjqU1+utoE0EQfA
+    offset:
+      reset: earliest
 database:
-  name: ${db.name:kafka_monitor_test}
-  host: ${db.host:192.168.6.167}
-  port: ${db.port:3306}
-  username: ${db.username:root}
-  password: ${db.password:zhangningpegasus}
+  name: kafka_monitor_test
+  host: 127.0.0.1
+  port: 3306
+  username: root
+  password: 123456
   retention:
-    days: ${db.retention.days:3}
+    days: 3
 topic:
-  blacklist: ${topic.blacklist:}
+  blacklist:
 
 nacos:
   config:
