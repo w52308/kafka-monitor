@@ -10,8 +10,8 @@
           offset bigint(20) NOT NULL ,--'消息在该分区号下的偏移量'
           key varchar(128)  NOT NULL DEFAULT '' ,--'消息键值'
           value varchar(128)  NOT NULL DEFAULT '' ,--'消息体的缩微样本'
-          timestamp timestamp default (datetime('now', 'localtime')) NOT NULL ,--'消息时间'
-          create_time timestamp default (datetime('now', 'localtime')) --'记录创建时间'
+          timestamp timestamp default (strftime('%Y-%m-%d %H:%M:%f','now')) NOT NULL ,--'消息时间'
+          create_time timestamp default (strftime('%Y-%m-%d %H:%M:%f','now')) --'记录创建时间'
         );
         CREATE UNIQUE INDEX idx_topic_partition_id_offset ON ${tableName} (partition_id,offset);
         CREATE INDEX idx_topic_key ON ${tableName} (key);
@@ -27,7 +27,7 @@
           partition_id int(11) NOT NULL ,--'分区id号'
           offset bigint(20) NOT NULL ,--'消息偏移量'
           value text  NOT NULL ,--'消息体'
-          create_time timestamp default (datetime('now', 'localtime'))--'记录创建时间'
+          create_time timestamp default (strftime('%Y-%m-%d %H:%M:%f','now'))--'记录创建时间'
         ) ;
         CREATE UNIQUE INDEX idx_topic_record_partition_id_offset ON ${recordTableName} (partition_id,offset);
     </update>

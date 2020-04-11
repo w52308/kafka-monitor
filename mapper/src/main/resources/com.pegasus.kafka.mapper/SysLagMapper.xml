@@ -21,7 +21,7 @@
     </select>
 
     <insert id="batchSave">
-        INSERT IGNORE INTO sys_lag
+        INSERT INTO sys_lag
         (
         consumer_name,
         topic_name,

@@ -19,8 +19,6 @@ import java.util.Set;
 @Repository
 public interface SchemaMapper extends BaseMapper<TopicRecord> {
     void createTableIfNotExists(@Param("dbName") String dbName);
-    
-    void createTableIfNotExists();
 
     void deleteExpired(@Param("dbName") String dbName,
                        @Param("tableNameList") Set<String> tableNameList,

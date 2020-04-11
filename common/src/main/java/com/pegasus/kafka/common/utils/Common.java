@@ -54,9 +54,9 @@ public class Common {
         result.setTestWhileIdle(true);
         result.setTestOnBorrow(false);
         result.setTestOnReturn(false);
-        result.setPoolPreparedStatements(true); //打开PSCache, 并且指定每个连接上PSCache的大小.分库分表较多的数据库，建议配置为false
-        result.setMaxPoolPreparedStatementPerConnectionSize(20);
-        result.setMaxOpenPreparedStatements(20);
+        result.setMaxPoolPreparedStatementPerConnectionSize(-1);
+        result.setPoolPreparedStatements(false); //打开PSCache, 并且指定每个连接上PSCache的大小.分库分表较多的数据库，建议配置为false
+        //result.setMaxOpenPreparedStatements(20);
         //result.setConnectionInitSqls(Collections.singleton("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci"));
         return result;
     }

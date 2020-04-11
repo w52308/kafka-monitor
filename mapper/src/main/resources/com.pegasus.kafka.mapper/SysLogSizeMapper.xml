@@ -53,7 +53,7 @@
     </select>
 
     <insert id="batchSave">
-        INSERT IGNORE INTO sys_log_size
+        INSERT INTO sys_log_size
         (
         topic_name,
         log_size,
