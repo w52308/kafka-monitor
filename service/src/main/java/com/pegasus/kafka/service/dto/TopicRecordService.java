@@ -106,7 +106,7 @@ public class TopicRecordService extends ServiceImpl<TopicRecordMapper, TopicReco
             connection.setAutoCommit(false);
 
             if (topicRecordList.size() > 0) {
-                try (PreparedStatement cmd = connection.prepareStatement(String.format("INSERT IGNORE INTO `%s`(`partition_id`,`offset`,`key`,`value`,`timestamp`) VALUES(?,?,?,?,?)", topicTableName))) {
+                try (PreparedStatement cmd = connection.prepareStatement(String.format("INSERT INTO %s(partition_id,offset,key,value,timestamp) VALUES(?,?,?,?,?)", topicTableName))) {
                     for (TopicRecord topicRecord : topicRecordList) {
                         cmd.setInt(1, topicRecord.getPartitionId());
                         cmd.setLong(2, topicRecord.getOffset());
@@ -121,7 +121,7 @@ public class TopicRecordService extends ServiceImpl<TopicRecordMapper, TopicReco
             }
 
             if (topicRecordValueList.size() > 0) {
-                try (PreparedStatement cmd = connection.prepareStatement(String.format("INSERT IGNORE INTO `%s`(`partition_id`,`offset`,`value`) VALUES(?,?,?)", recordTableName))) {
+                try (PreparedStatement cmd = connection.prepareStatement(String.format("INSERT IGNORE INTO %s(partition_id,offset,value) VALUES(?,?,?)", recordTableName))) {
                     for (TopicRecordValue topicRecordValue : topicRecordValueList) {
                         cmd.setInt(1, topicRecordValue.getPartitionId());
                         cmd.setLong(2, topicRecordValue.getOffset());

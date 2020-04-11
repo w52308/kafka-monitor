@@ -4,38 +4,38 @@
 <mapper namespace="com.pegasus.kafka.mapper.SysAdminMapper">
     <sql id="select">
         SELECT
-        admin.id AS `id`,
-        admin.`username`,
-        admin.`name`,
-        admin.`gender`,
-        admin.`phone_number`,
-        admin.`email`,
-        admin.`remark`,
-        admin.`create_time`,
-        role.`id` AS `sys_role_id`,
-        role.`name` AS `role_name`
-        FROM `sys_admin` admin
-        LEFT OUTER JOIN `sys_role` role ON admin.`sys_role_id`= role.`id`
+        admin.id AS id,
+        admin.username,
+        admin.name,
+        admin.gender,
+        admin.phone_number,
+        admin.email,
+        admin.remark,
+        admin.create_time,
+        role.id AS sys_role_id,
+        role.name AS role_name
+        FROM sys_admin admin
+        LEFT OUTER JOIN sys_role role ON admin.sys_role_id= role.id
     </sql>
 
     <select id="list" resultType="com.pegasus.kafka.entity.vo.AdminVo">
         <include refid="select"></include>
         WHERE 1 = 1
         <if test="name!=null">
-            AND admin.`name` LIKE CONCAT('%',#{name},'%')
+            AND admin.name LIKE CONCAT('%',#{name},'%')
         </if>
-        ORDER BY admin.`username` ASC
+        ORDER BY admin.username ASC
     </select>
 
     <select id="getById" resultType="com.pegasus.kafka.entity.vo.AdminVo">
         <include refid="select"></include>
-        WHERE admin.`id` = #{sysAdminId}
-        ORDER BY admin.`username` ASC
+        WHERE admin.id = #{sysAdminId}
+        ORDER BY admin.username ASC
     </select>
 
     <select id="getByUsernameAndPassword" resultType="com.pegasus.kafka.entity.vo.AdminVo">
         <include refid="select"></include>
-        WHERE admin.`username` = #{username} AND
-        admin.`password` = #{password}
+        WHERE admin.username = #{username} AND
+        admin.password = #{password}
     </select>
 </mapper>

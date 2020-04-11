@@ -18,24 +18,24 @@ import lombok.Getter;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName(value = "`sys_kpi`")
+@TableName(value = "sys_kpi")
 public class SysKpi extends BaseDto {
     /**
      * kpi的主机信息
      */
-    @TableField(value = "`host`")
+    @TableField(value = "host")
     private String host;
 
     /**
      * kpi指标名称
      */
-    @TableField(value = "`kpi`")
+    @TableField(value = "kpi")
     private Integer kpi;
 
     /**
      * kpi值
      */
-    @TableField(value = "`value`")
+    @TableField(value = "value")
     private Double value;
 
     @Getter

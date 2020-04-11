@@ -3,119 +3,109 @@
 
 <mapper namespace="com.pegasus.kafka.mapper.TopicRecordMapper">
     <update id="createTableIfNotExists">
-         SET NAMES utf8mb4;
-         SET FOREIGN_KEY_CHECKS = 0;
 
-         CREATE TABLE IF NOT EXISTS `${tableName}` (
-          `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键',
-          `partition_id` int(11) UNSIGNED NOT NULL COMMENT '分区号',
-          `offset` bigint(20) UNSIGNED NOT NULL COMMENT '消息在该分区号下的偏移量',
-          `key` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '消息键值',
-          `value` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '消息体的缩微样本',
-          `timestamp` datetime(0) NOT NULL COMMENT '消息时间',
-          `create_time` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '记录创建时间',
-          PRIMARY KEY (`id`) USING BTREE,
-          UNIQUE INDEX `idx_topic_partition_id_offset`(`partition_id`, `offset`) USING BTREE,
-          INDEX `idx_topic_key`(`key`) USING BTREE,
-          INDEX `idx_topic_timestamp`(`timestamp`) USING BTREE,
-          INDEX `idx_topic_create_time`(`create_time`) USING BTREE,
-          INDEX `idx_topic_offset`(`offset`) USING BTREE
-        ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
-
-        SET FOREIGN_KEY_CHECKS = 1;
+         CREATE TABLE IF NOT EXISTS ${tableName} (
+          id INTEGER  PRIMARY key AUTOINCREMENT ,--'主键'
+          partition_id int(11) NOT NULL ,--'分区号'
+          offset bigint(20) NOT NULL ,--'消息在该分区号下的偏移量'
+          key varchar(128)  NOT NULL DEFAULT '' ,--'消息键值'
+          value varchar(128)  NOT NULL DEFAULT '' ,--'消息体的缩微样本'
+          timestamp timestamp default (datetime('now', 'localtime')) NOT NULL ,--'消息时间'
+          create_time timestamp default (datetime('now', 'localtime')) --'记录创建时间'
+        );
+        CREATE UNIQUE INDEX idx_topic_partition_id_offset ON ${tableName} (partition_id,offset);
+        CREATE INDEX idx_topic_key ON ${tableName} (key);
+        CREATE INDEX idx_topic_timestamp ON ${tableName} (timestamp);
+        CREATE INDEX idx_topic_create_time ON ${tableName} (create_time);
+        CREATE INDEX idx_topic_offset ON ${tableName} (offset);
     </update>
 
     <update id="createRecordTableIfNotExists">
-         SET NAMES utf8mb4;
-         SET FOREIGN_KEY_CHECKS = 0;
 
-        CREATE TABLE IF NOT EXISTS `${recordTableName}` (
-          `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键',
-          `partition_id` int(11) UNSIGNED NOT NULL COMMENT '分区id号',
-          `offset` bigint(20) UNSIGNED NOT NULL COMMENT '消息偏移量',
-          `value` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '消息体',
-          `create_time` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '记录创建时间',
-          PRIMARY KEY (`id`) USING BTREE,
-          UNIQUE INDEX `idx_topic_record_partition_id_offset`(`partition_id`, `offset`) USING BTREE
-        ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
-
-        SET FOREIGN_KEY_CHECKS = 1;
+        CREATE TABLE IF NOT EXISTS ${recordTableName} (
+          id INTEGER  PRIMARY key AUTOINCREMENT ,--'主键'
+          partition_id int(11) NOT NULL ,--'分区id号'
+          offset bigint(20) NOT NULL ,--'消息偏移量'
+          value text  NOT NULL ,--'消息体'
+          create_time timestamp default (datetime('now', 'localtime'))--'记录创建时间'
+        ) ;
+        CREATE UNIQUE INDEX idx_topic_record_partition_id_offset ON ${recordTableName} (partition_id,offset);
     </update>
 
     <delete id="dropTable">
-        DROP TABLE IF EXISTS `${tableName}`;
+        DROP TABLE IF EXISTS ${tableName};
     </delete>
 
     <delete id="truncateTable">
-        TRUNCATE TABLE `${tableName}`;
+        TRUNCATE TABLE ${tableName};
     </delete>
 
     <select id="listRecords" resultType="com.pegasus.kafka.entity.dto.TopicRecord">
         SELECT
         *
-        FROM `${tableName}`
+        FROM ${tableName}
         WHERE 1 = 1
         <if test="partitionId >= 0">
-            AND `partition_id` = #{partitionId}
+            AND partition_id = #{partitionId}
         </if>
         <if test="key != null and key != ''">
-            AND `key` = #{key}
+            AND key = #{key}
         </if>
         <if test="from != null and to !=null">
-            AND `timestamp` &gt;= #{from}
-            AND `timestamp` &lt;= #{to}
+            AND timestamp &gt;= #{from}
+            AND timestamp &lt;= #{to}
         </if>
-        ORDER BY `timestamp` DESC, `offset` DESC
+        ORDER BY timestamp DESC, offset DESC
     </select>
 
     <select id="findRecord" resultType="com.pegasus.kafka.entity.dto.TopicRecord">
         SELECT
         *
-        FROM `${tableName}`
-        WHERE `partition_id` = #{partitionId}
-        AND   `offset` = #{offset}
-        AND   `key` = #{key}
+        FROM ${tableName}
+        WHERE partition_id = #{partitionId}
+        AND   offset = #{offset}
+        AND   key = #{key}
     </select>
 
     <select id="findRecordValue" resultType="java.lang.String">
         SELECT
-        `value`
-        FROM `${tableName}`
-        WHERE `partition_id` = #{partitionId}
-        AND   `offset` = #{offset}
+        value
+        FROM ${tableName}
+        WHERE partition_id = #{partitionId}
+        AND   offset = #{offset}
     </select>
 
     <select id="getRecordsCount" resultType="java.lang.Long">
         SELECT
         COUNT(1)
-        FROM `${tableName}`
+        FROM ${tableName}
         WHERE 1 = 1
         <if test="from != null">
-            AND `timestamp` &gt;= #{from}
+            AND timestamp &gt;= #{from}
         </if>
         <if test="to != null">
-            AND `timestamp` &lt; #{to}
+            AND timestamp &lt; #{to}
         </if>
     </select>
 
     <select id="listMaxOffset" resultType="com.pegasus.kafka.entity.po.MaxOffset">
     SELECT
     partition_id,
-    MAX(`offset`) AS `offset`
-    FROM `${tableName}`
+    MAX(offset) AS offset
+    FROM ${tableName}
     GROUP BY partition_id
     </select>
 
     <select id="getMaxCreateTime" resultType="java.util.Date">
     SELECT
-    MAX(`create_time`)
-    FROM `${tableName}`
+    MAX(create_time)
+    FROM ${tableName}
     </select>
 
     <select id="getMaxOffset" resultType="java.lang.Long">
     SELECT
-    IFNULL(MAX(`offset`), 0)
-    FROM `${tableName}`
+    IFNULL(MAX(offset), 0)
+    FROM ${tableName}
     </select>
 
 </mapper>

@@ -17,53 +17,53 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName(value =  "`sys_admin`")
+@TableName(value =  "sys_admin")
 public class SysAdmin extends BaseDto {
     /**
      * 角色id(sys_role表的主键)
      */
-    @TableField(value = "`sys_role_id`")
+    @TableField(value = "sys_role_id")
     private Long sysRoleId;
 
     /**
      * 管理员的登陆用户名
      */
-    @TableField(value = "`username`")
+    @TableField(value = "username")
     private String username;
 
     /**
      * 管理员的登陆密码
      */
-    @TableField(value = "`password`")
+    @TableField(value = "password")
     private String password;
 
     /**
      * 管理员姓名
      */
-    @TableField(value = "`name`")
+    @TableField(value = "name")
     private String name;
 
     /**
      * 性别(true: 男性; false:女性)
      */
-    @TableField(value = "`gender`")
+    @TableField(value = "gender")
     private Boolean gender;
 
     /**
      * 手机号码
      */
-    @TableField(value = "`phone_number`")
+    @TableField(value = "phone_number")
     private String phoneNumber;
 
     /**
      * 邮件地址
      */
-    @TableField(value = "`email`")
+    @TableField(value = "email")
     private String email;
 
     /**
      * 备注
      */
-    @TableField(value = "`remark`")
+    @TableField(value = "remark")
     private String remark;
 }

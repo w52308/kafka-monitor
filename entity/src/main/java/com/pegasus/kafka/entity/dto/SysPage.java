@@ -16,7 +16,7 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName(value = "`sys_page`")
+@TableName(value = "sys_page")
 public class SysPage extends BaseDto {
     /**
      * 页面名称

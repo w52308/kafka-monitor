@@ -20,28 +20,28 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class AdminVo extends BaseDto {
-    @TableField(value = "`sys_role_id`")
+    @TableField(value = "sys_role_id")
     private Long sysRoleId;
 
-    @TableField(value = "`role_name`")
+    @TableField(value = "role_name")
     private String roleName;
 
-    @TableField(value = "`username`")
+    @TableField(value = "username")
     private String username;
 
-    @TableField(value = "`name`")
+    @TableField(value = "name")
     private String name;
 
-    @TableField(value = "`gender`")
+    @TableField(value = "gender")
     private Boolean gender;
 
-    @TableField(value = "`phone_number`")
+    @TableField(value = "phone_number")
     private String phoneNumber;
 
-    @TableField(value = "`email`")
+    @TableField(value = "email")
     private String email;
 
-    @TableField(value = "`remark`")
+    @TableField(value = "remark")
     private String remark;
 
     @TableField(exist = false)

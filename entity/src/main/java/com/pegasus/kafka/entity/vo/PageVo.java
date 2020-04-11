@@ -31,7 +31,7 @@ public class PageVo extends BaseDto {
     @TableField("is_menu")
     private Boolean isMenu;
 
-    @TableField(value = "`is_default`")
+    @TableField(value = "is_default")
     private Boolean isDefault;
 
     @TableField(value = "is_blank")

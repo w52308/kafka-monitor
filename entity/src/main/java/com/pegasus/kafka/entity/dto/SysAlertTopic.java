@@ -16,30 +16,30 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName(value = "`sys_alert_topic`")
+@TableName(value = "sys_alert_topic")
 public class SysAlertTopic extends BaseDto {
-    @TableField(value = "`topic_name`")
+    @TableField(value = "topic_name")
     private String topicName;
 
-    @TableField(value = "`from_time`")
+    @TableField(value = "from_time")
     private String fromTime;
 
-    @TableField(value = "`to_time`")
+    @TableField(value = "to_time")
     private String toTime;
 
-    @TableField(value = "`from_tps`")
+    @TableField(value = "from_tps")
     private Integer fromTps;
 
-    @TableField(value = "`to_tps`")
+    @TableField(value = "to_tps")
     private Integer toTps;
 
-    @TableField(value = "`from_mom_tps`")
+    @TableField(value = "from_mom_tps")
     private Integer fromMomTps;
 
-    @TableField(value = "`to_mom_tps`")
+    @TableField(value = "to_mom_tps")
     private Integer toMomTps;
 
-    @TableField(value = "`email`")
+    @TableField(value = "email")
     private String email;
 
     public String toInfo() {

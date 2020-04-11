@@ -50,4 +50,10 @@ public class PropertyService {
     
     @Value("${kafka.sasl.offset.reset}")
     private String offsetReset;
+    
+    @Value("${database.jdbc.url}")
+    private String jdbcUrl;
+    
+    @Value("${database.jdbc.driver}")
+    private String driver;
 }

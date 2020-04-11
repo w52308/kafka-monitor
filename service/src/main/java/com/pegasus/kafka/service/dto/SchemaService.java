@@ -33,6 +33,11 @@ public class SchemaService extends ServiceImpl<SchemaMapper, TopicRecord> {
     public void createTableIfNotExists() {
         this.baseMapper.createTableIfNotExists(propertyService.getDbName());
     }
+    
+    @TranSave
+    public void createTableIfNotExistsSqlLite() {
+        this.baseMapper.createTableIfNotExists();
+    }
 
     @TranSave
     public void deleteExpired(Set<String> tableNames) {
@@ -43,7 +48,7 @@ public class SchemaService extends ServiceImpl<SchemaMapper, TopicRecord> {
 
     @TranRead
     public Set<String> listTables() {
-        String databaseName = Common.trim(propertyService.getDbName(), '`');
-        return this.baseMapper.listTables(databaseName);
+        //String databaseName = Common.trim(propertyService.getDbName(), "");
+        return this.baseMapper.listTables(propertyService.getDbName());
     }
 }

@@ -6,28 +6,28 @@
     <select id="list" resultType="com.pegasus.kafka.entity.vo.PageVo">
         SELECT
         p.id,
-        p.`name`,
+        p.name,
         p.url,
         p.is_menu,
         p.is_default,
         p.is_blank,
         p.icon_class,
         p.parent_id,
-        parent.`name` AS parent_name,
+        parent.name AS parent_name,
         p.order_num,
         p.remark
-        FROM `sys_page` p
-        LEFT OUTER JOIN `sys_page` parent ON p.parent_id = parent.id
+        FROM sys_page p
+        LEFT OUTER JOIN sys_page parent ON p.parent_id = parent.id
         <where>
             <if test="name!=null and name!=''">
-                p.`name` LIKE CONCAT('%',#{name},'%')
+                p.name LIKE CONCAT('%',#{name},'%')
             </if>
         </where>
         ORDER BY p.parent_id ASC, p.order_num ASC
     </select>
 
     <select id="getMaxOrderNum" resultType="java.lang.Long">
-		SELECT IFNULL(MAX(order_num), 0) FROM `sys_page` WHERE parent_id = #{parentId}
+		SELECT IFNULL(MAX(order_num), 0) FROM sys_page WHERE parent_id = #{parentId}
 	</select>
 
 </mapper>

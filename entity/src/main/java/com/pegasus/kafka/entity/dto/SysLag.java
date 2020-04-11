@@ -16,30 +16,30 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName(value = "`sys_lag`")
+@TableName(value = "sys_lag")
 public class SysLag extends BaseDto {
     /**
      * 消费者名称
      */
-    @TableField(value = "`consumer_name`")
+    @TableField(value = "consumer_name")
     private String consumerName;
 
     /**
      * 消费者订阅的主题名称
      */
-    @TableField(value = "`topic_name`")
+    @TableField(value = "topic_name")
     private String topicName;
 
     /**
      * 当前消费的偏移量位置
      */
-    @TableField(value = "`offset`")
+    @TableField(value = "offset")
     private Long offset;
 
     /**
      * 消息堆积数量
      */
-    @TableField(value = "`lag`")
+    @TableField(value = "lag")
     private Long lag;
 
 

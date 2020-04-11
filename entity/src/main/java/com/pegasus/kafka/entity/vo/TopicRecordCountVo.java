@@ -14,12 +14,12 @@ import lombok.Data;
  */
 @Data
 public class TopicRecordCountVo {
-    @TableField(value = "`topic_name`")
+    @TableField(value = "topic_name")
     private String topicName;
 
-    @TableField(value = "`log_size`")
+    @TableField(value = "log_size")
     private Long logSize;
 
-    @TableField(value = "`growth_rate`")
+    @TableField(value = "growth_rate")
     private Double growthRate;
 }

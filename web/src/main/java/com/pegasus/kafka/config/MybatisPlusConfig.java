@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
 import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
 import com.pegasus.kafka.common.utils.Common;
 import com.pegasus.kafka.service.property.PropertyService;
+
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.type.JdbcType;
 import org.springframework.context.annotation.Bean;
@@ -15,9 +16,10 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+
+import javax.sql.DataSource;
 
 /**
  * Mybatis's config for set the paging.
@@ -43,9 +45,8 @@ public class MybatisPlusConfig {
 
     @Bean
     public DataSource dataSource() {
-        return Common.createDataSource(propertyService.getDbHost(),
-                propertyService.getDbPort().toString(),
-                propertyService.getDbName(),
+        return Common.createDataSource(propertyService.getDriver(),
+                propertyService.getJdbcUrl(),
                 propertyService.getDbUsername(),
                 propertyService.getDbPassword());
     }
@@ -75,17 +76,16 @@ public class MybatisPlusConfig {
 
     private void initDatabase() {
         try {
-            try (DruidDataSource dataSource = (DruidDataSource) Common.createDataSource(propertyService.getDbHost(),
-                    propertyService.getDbPort().toString(),
-                    "",
+            try (DruidDataSource dataSource = (DruidDataSource) Common.createDataSource(propertyService.getDriver(),
+                    propertyService.getJdbcUrl(),
                     propertyService.getDbUsername(),
                     propertyService.getDbPassword(),
                     1,
                     1,
                     1);
                  Connection connection = dataSource.getConnection();
-                 PreparedStatement preparedStatement = connection.prepareStatement(String.format("CREATE DATABASE IF NOT EXISTS %s CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci", propertyService.getDbName()))) {
-                preparedStatement.execute();
+                 PreparedStatement preparedStatement = connection.prepareStatement(String.format("CREATE DATABASE IF NOT EXISTS %s ", propertyService.getDbName()))) {
+                 preparedStatement.execute();
             }
         } catch (Exception ignored) {
 

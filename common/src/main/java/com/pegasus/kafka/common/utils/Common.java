@@ -30,18 +30,17 @@ public class Common {
     private final static DecimalFormat df = new DecimalFormat("0.00");
     private final static String SALT = "PEgASuS";
     private static ThreadLocal<SimpleDateFormat> threadLocal = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
-
-    public static DataSource createDataSource(String host,
-                                              String port,
-                                              String databaseName,
-                                              String userName,
-                                              String password,
-                                              int initialSize,
-                                              int minIdle,
-                                              int maxActive) {
+    
+    public static DataSource createDataSource(String driver,
+        String url,
+        String userName,
+        String password,
+        int initialSize,
+        int minIdle,
+        int maxActive) {
         DruidDataSource result = new DruidDataSource();
-        result.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getCanonicalName());
-        result.setUrl(String.format(DATA_BASE_URL, host, port, databaseName));
+        result.setDriverClassName(driver);
+        result.setUrl(url);
         result.setUsername(userName);
         result.setPassword(password);
         result.setInitialSize(initialSize); //配置初始化大小
@@ -58,18 +57,18 @@ public class Common {
         result.setPoolPreparedStatements(true); //打开PSCache, 并且指定每个连接上PSCache的大小.分库分表较多的数据库，建议配置为false
         result.setMaxPoolPreparedStatementPerConnectionSize(20);
         result.setMaxOpenPreparedStatements(20);
-        result.setConnectionInitSqls(Collections.singleton("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci"));
+        //result.setConnectionInitSqls(Collections.singleton("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci"));
         return result;
     }
-
-    public static DataSource createDataSource(String host,
-                                              String port,
-                                              String databaseName,
-                                              String userName,
-                                              String password) {
-        return createDataSource(host, port, databaseName, userName, password, 10, 50, 200);
+    
+    
+    public static DataSource createDataSource(String driver,
+        String jdbcUrl,
+        String userName,
+        String password) {
+        return createDataSource(driver, jdbcUrl, userName, password, 10, 50, 200);
     }
-
+    
     public static <T> List<List<T>> averageAssign(List<T> source, int n) {
         List<List<T>> result = new ArrayList<>();
         int remainder = source.size() % n;

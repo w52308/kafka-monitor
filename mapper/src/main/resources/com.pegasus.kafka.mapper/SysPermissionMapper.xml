@@ -6,24 +6,24 @@
     <select id="getPermission" resultType="com.pegasus.kafka.entity.vo.PageVo">
         SELECT
         page.id,
-        page.`name`,
+        page.name,
         page.url,
         page.is_menu,
         page.is_default,
         page.icon_class,
         page.parent_id,
-        parent.`name` AS parent_name,
+        parent.name AS parent_name,
         page.order_num,
         page.remark,
         p.can_insert,
         p.can_delete,
         p.can_update,
         p.can_select
-        FROM `sys_page` page
-        LEFT OUTER JOIN `sys_permission` p ON page.id = p.sys_page_id
-        LEFT OUTER JOIN `sys_role` r ON r.id = p.sys_role_id
-        LEFT OUTER JOIN `sys_admin` a ON a.sys_role_id = r.id
-        LEFT OUTER JOIN `sys_page` parent ON page.parent_id = parent.id
+        FROM sys_page page
+        LEFT OUTER JOIN sys_permission p ON page.id = p.sys_page_id
+        LEFT OUTER JOIN sys_role r ON r.id = p.sys_role_id
+        LEFT OUTER JOIN sys_admin a ON a.sys_role_id = r.id
+        LEFT OUTER JOIN sys_page parent ON page.parent_id = parent.id
         WHERE 1 = 1
         <if test="sysAdminId!=null">
             AND a.id=#{sysAdminId}
@@ -34,16 +34,16 @@
         SELECT
         p.id,
         page.id AS page_id,
-        page.`name` AS page_name,
+        page.name AS page_name,
         r.id AS role_id,
-        r.`name` AS role_name,
+        r.name AS role_name,
         p.can_insert,
         p.can_delete,
         p.can_update,
         p.can_select
-        FROM `sys_permission` p
-        LEFT OUTER JOIN `sys_page` page ON page.id = p.sys_page_id
-        LEFT OUTER JOIN `sys_role` r ON p.sys_role_id = r.id
+        FROM sys_permission p
+        LEFT OUTER JOIN sys_page page ON page.id = p.sys_page_id
+        LEFT OUTER JOIN sys_role r ON p.sys_role_id = r.id
         WHERE 1=1
         <if test="sysRoleId != null">
             AND r.id = #{sysRoleId}
@@ -56,8 +56,8 @@
     <select id="getPermissionPagesByRoleId" resultType="com.pegasus.kafka.entity.dto.SysPage">
         SELECT
         page.*
-        FROM `sys_page` page
-        LEFT OUTER JOIN `sys_permission` p ON page.id=p.sys_page_id
+        FROM sys_page page
+        LEFT OUTER JOIN sys_permission p ON page.id=p.sys_page_id
         WHERE p.sys_role_id=#{sysRoleId}
     </select>
 </mapper>

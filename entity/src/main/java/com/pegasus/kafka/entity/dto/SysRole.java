@@ -17,23 +17,23 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName(value =  "`sys_role`")
+@TableName(value =  "sys_role")
 public class SysRole extends BaseDto {
     /**
      * 角色名称
      */
-    @TableField(value = "`name`")
+    @TableField(value = "name")
     private String name;
 
     /**
      * 是否是超级管理员(true:是; false:否)
      */
-    @TableField(value = "`super_admin`")
+    @TableField(value = "super_admin")
     private Boolean superAdmin;
 
     /**
      * 角色说明
      */
-    @TableField(value = "`remark`")
+    @TableField(value = "remark")
     private String remark;
 }

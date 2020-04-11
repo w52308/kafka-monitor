@@ -13,6 +13,9 @@ database:
   port: 3306
   username: root
   password: 123456
+  jdbc:
+    driver: org.sqlite.JDBC
+    url: jdbc:sqlite:/home/ivs/kafka_monitor_test.db
   retention:
     days: 3
 topic:
